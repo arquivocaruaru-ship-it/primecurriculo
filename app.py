@@ -30,6 +30,12 @@ app = FastAPI()
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+from database import engine
+import models
+
+models.Base.metadata.create_all(bind=engine)
+
+print("BANCO NOVO CRIADO")
 
 # =========================
 # INICIALIZAÇÃO DO BANCO
