@@ -30,11 +30,27 @@ app = FastAPI()
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+import os
+from database import engine
+import models
+
+models.Base.metadata.drop_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
+
+print("BANCO RECRIADO")
+
 # =========================
 # INICIALIZAÇÃO DO BANCO
 # =========================
 models.Base.metadata.create_all(bind=engine)
 
+import os
+
+if os.getenv("RESET_DB") == "true":
+    import models
+    from database import engine
+    models.Base.metadata.drop_all(bind=engine)
+    models.Base.metadata.create_all(bind=engine)
 # =========================
 # ROUTER
 # =========================
