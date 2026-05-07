@@ -35,7 +35,7 @@ import models
 
 models.Base.metadata.create_all(bind=engine)
 
-print("BANCO NOVO CRIADO")
+
 
 # =========================
 # INICIALIZAÇÃO DO BANCO
@@ -569,33 +569,54 @@ def reset_pagamento():
 # INCLUI ROUTER NO APP
 # =========================
 @router.get("/criar-pagamento")
-def criar_pagamento():
-    token = os.getenv("MERCADO_PAGO_TOKEN")
+def criar_pagamento(request: Request):
 
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
+    user_id = request.cookies.get("user_id")
+
+    if not user_id:
+        return RedirectResponse(url="/")
+
+    sdk = mercadopago.SDK(os.getenv("MERCADO_PAGO_TOKEN"))
 
     body = {
         "items": [
             {
-                "title": "Prime Currículo - Acesso 30 dias",
+                "title": "Prime Currículo - Acesso por 30 dias",
                 "quantity": 1,
                 "currency_id": "BRL",
-                "unit_price": 14.90
+                "unit_price": 9.90
             }
-        ]
+        ],
+
+        # ID do usuário
+        "external_reference": str(user_id),
+
+        # Webhook
+        "notification_url": "https://primecurriculo.onrender.com/webhook",
+
+        # Retornos
+        "back_urls": {
+            "success": "https://primecurriculo.onrender.com/dashboard",
+            "failure": "https://primecurriculo.onrender.com/dashboard",
+            "pending": "https://primecurriculo.onrender.com/dashboard"
+        },
+
+        "auto_return": "approved",
+
+        # 🔥 SOMENTE PIX
+        "payment_methods": {
+            "excluded_payment_types": [
+                {"id": "credit_card"},
+                {"id": "debit_card"},
+                {"id": "ticket"}
+            ],
+            "installments": 1
+        }
     }
 
-    response = requests.post(
-        "https://api.mercadopago.com/checkout/preferences",
-        json=body,
-        headers=headers
-    )
+    preference_response = sdk.preference().create(body)
+    preference = preference_response["response"]
 
-    data = response.json()
-
-    return RedirectResponse(url=data["init_point"])
+    return RedirectResponse(preference["init_point"])
 
 app.include_router(router)
