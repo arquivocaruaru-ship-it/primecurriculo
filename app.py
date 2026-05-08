@@ -585,7 +585,7 @@ def criar_pagamento(request: Request):
                 "title": "Prime Currículo - Acesso por 30 dias",
                 "quantity": 1,
                 "currency_id": "BRL",
-                "unit_price": 9.90
+                "unit_price": 1.00
             }
         ],
 
