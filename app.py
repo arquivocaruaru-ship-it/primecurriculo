@@ -533,7 +533,7 @@ def pagamento(request: Request):
         context={}
     )
 
-from datetime import datetime
+
 
 @app.get("/preview-check")
 def preview_check(request: Request, db: Session = Depends(get_db)):
@@ -625,7 +625,7 @@ def criar_pagamento(request: Request):
 
     return RedirectResponse(preference["init_point"])
 
-app.include_router(router)
+
 
 from datetime import datetime, timedelta
 import requests
@@ -671,3 +671,5 @@ async def webhook(request: Request, db: Session = Depends(get_db)):
                 print("USUÁRIO LIBERADO")
 
     return {"status": "ok"}
+
+app.include_router(router)
