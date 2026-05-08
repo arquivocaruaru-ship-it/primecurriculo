@@ -535,23 +535,26 @@ def pagamento(request: Request):
 
 from datetime import datetime
 
-@router.get("/preview-check")
+@app.get("/preview-check")
 def preview_check(request: Request, db: Session = Depends(get_db)):
+
     user_id = request.cookies.get("user_id")
 
     if not user_id:
         return RedirectResponse(url="/")
 
-    usuario = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
+    usuario = db.query(models.Usuario).filter(
+        models.Usuario.id == int(user_id)
+    ).first()
 
     if not usuario:
         return RedirectResponse(url="/")
 
-    # ✅ SE PAGOU → LIBERA
+    # PLANO ATIVO
     if usuario.pago_ate and datetime.now() < usuario.pago_ate:
         return RedirectResponse(url="/preview")
 
-    # ❌ NÃO PAGOU → VAI DIRETO PRO PAGAMENTO (PIX)
+    # PLANO INATIVO
     return RedirectResponse(url="/criar-pagamento")
 
 @router.get("/liberar")
