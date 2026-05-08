@@ -16,6 +16,7 @@ import json
 import os
 import shutil
 import requests
+import mercadopago
 
 # =========================
 # BASE DIR
