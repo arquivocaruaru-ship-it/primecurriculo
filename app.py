@@ -672,4 +672,5 @@ async def webhook(request: Request, db: Session = Depends(get_db)):
 
     return {"status": "ok"}
 
+
 app.include_router(router)
