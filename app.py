@@ -18,6 +18,8 @@ import shutil
 import requests
 import mercadopago
 
+from datetime import datetime, timedelta
+
 # =========================
 # BASE DIR
 # =========================
@@ -621,3 +623,48 @@ def criar_pagamento(request: Request):
     return RedirectResponse(preference["init_point"])
 
 app.include_router(router)
+
+from datetime import datetime, timedelta
+import requests
+
+
+@router.post("/webhook")
+async def webhook(request: Request, db: Session = Depends(get_db)):
+
+    data = await request.json()
+
+    print("WEBHOOK RECEBIDO:", data)
+
+    if data.get("type") == "payment":
+
+        payment_id = data["data"]["id"]
+
+        url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
+
+        headers = {
+            "Authorization": f"Bearer {os.getenv('MERCADO_PAGO_TOKEN')}"
+        }
+
+        response = requests.get(url, headers=headers)
+
+        pagamento = response.json()
+
+        print("PAGAMENTO:", pagamento)
+
+        if pagamento.get("status") == "approved":
+
+            user_id = pagamento.get("external_reference")
+
+            usuario = db.query(models.Usuario).filter(
+                models.Usuario.id == int(user_id)
+            ).first()
+
+            if usuario:
+
+                usuario.pago_ate = datetime.now() + timedelta(days=30)
+
+                db.commit()
+
+                print("USUÁRIO LIBERADO")
+
+    return {"status": "ok"}
